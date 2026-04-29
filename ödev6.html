@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Not Sistemi</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        text-align: center;
+    }
+
+    h2 {
+        color: #333;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    input {
+        padding: 5px;
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    table {
+        margin: auto;
+        border-collapse: collapse;
+        width: 80%;
+        background-color: white;
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .kaldi {
+        color: red;
+        font-weight: bold;
+    }
+
+    .gecti {
+        color: green;
+        font-weight: bold;
+    }
+</style>
+
+</head>
+<body>
+
+<h2>Öğrenci Not Sistemi</h2>
+
+<form id="form">
+    <input type="text" id="ad" placeholder="Ad Soyad">
+    <input type="number" id="vize" placeholder="Vize">
+    <input type="number" id="final" placeholder="Final">
+    <button type="submit">Ekle</button>
+</form>
+
+<table id="tablo">
+    <thead>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>Vize</th>
+            <th>Final</th>
+            <th>Ortalama</th>
+            <th>Harf</th>
+            <th>Durum</th>
+            <th>Sil</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3"><b>Genel Ortalama</b></td>
+            <td id="genelOrtalama">0</td>
+            <td colspan="3"></td>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+
+let ogrenciler = [];
+
+const form = document.getElementById("form");
+const tbody = document.querySelector("tbody");
+
+form.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let ad = document.getElementById("ad").value.trim();
+    let vize = Number(document.getElementById("vize").value);
+    let final = Number(document.getElementById("final").value);
+
+    // 🔹 Doğrulama
+    if(ad === "" || isNaN(vize) || isNaN(final)){
+        alert("Lütfen tüm alanları doldurun!");
+        return;
+    }
+
+    if(vize < 0 || vize > 100 || final < 0 || final > 100){
+        alert("Notlar 0-100 arasında olmalı!");
+        return;
+    }
+
+    let ort = (vize * 0.4) + (final * 0.6);
+    let harf = harfNotu(ort);
+    let durum = ort >= 50 ? "Geçti" : "Kaldı";
+
+    ogrenciler.push({ad, vize, final, ort, harf, durum});
+
+    tabloGuncelle();
+    form.reset();
+});
+
+// 🔹 Harf notu
+function harfNotu(ort){
+    if(ort >= 90) return "AA";
+    if(ort >= 85) return "BA";
+    if(ort >= 80) return "BB";
+    if(ort >= 75) return "CB";
+    if(ort >= 70) return "CC";
+    if(ort >= 60) return "DC";
+    if(ort >= 50) return "DD";
+    return "FF";
+}
+
+// 🔹 Tablo güncelle
+function tabloGuncelle(){
+    tbody.innerHTML = "";
+
+    ogrenciler.forEach((o, i) => {
+        let tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${o.ad}</td>
+            <td>${o.vize}</td>
+            <td>${o.final}</td>
+            <td>${o.ort.toFixed(2)}</td>
+            <td>${o.harf}</td>
+            <td class="${o.durum === 'Geçti' ? 'gecti' : 'kaldi'}">${o.durum}</td>
+            <td><button onclick="sil(${i})">Sil</button></td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    genelOrtalama();
+}
+
+// 🔹 Sil
+function sil(i){
+    ogrenciler.splice(i,1);
+    tabloGuncelle();
+}
+
+// 🔹 Genel ortalama
+function genelOrtalama(){
+    if(ogrenciler.length === 0){
+        document.getElementById("genelOrtalama").innerText = 0;
+        return;
+    }
+
+    let toplam = 0;
+
+    ogrenciler.forEach(o => {
+        toplam += o.ort;
+    });
+
+    let ort = toplam / ogrenciler.length;
+    document.getElementById("genelOrtalama").innerText = ort.toFixed(2);
+}
+
+</script>
+
+</body>
+</html>
